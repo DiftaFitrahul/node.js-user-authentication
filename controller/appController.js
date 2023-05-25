@@ -3,6 +3,19 @@ import UserModel from '../model/user.js';
 import bcrypt from 'bcrypt';
 import ENV from '../config.js';
 
+/**middleware for verify user */
+export async function verifyUser(req, res, next) {
+  try{
+    const {username} = req.method == 'GET' ? req.query : req.body
+
+    const exist = UserModel.findOne({username})
+    if(!exist) return res.status(404).send({error: 'User not found'})
+
+    next();
+  }catch(err){
+    return res.status(500).send({error : "Authentication error"})
+  }
+}
 
 
 /** POST http://localhost:8080/api/register
@@ -52,11 +65,11 @@ import ENV from '../config.js';
             })
 
             user.save().then((result) => {
-              res.status(200).send({message : "Succesfully registered"})
+              return res.status(200).send({message : "Succesfully registered"})
             }).catch((error) => {res.status(500).send({error})})
 
           }).catch((err) => {
-            res.status(500).send({error: "fail to hash password"})
+            return res.status(500).send({error: "fail to hash password"})
           })
         }
       }).catch((err) => {
@@ -64,7 +77,7 @@ import ENV from '../config.js';
       })
 
     }catch(err){
-      res.status(500).send(err.message)
+      return res.status(500).send(err.message)
     }
  }
 
@@ -96,15 +109,15 @@ export async function login(req, res)  {
 
         }).catch((error) => {
           
-          res.status(400).send({error : "Password doesn't match",
+          return res.status(400).send({error : "Password doesn't match",
         reason : error.message
         })
         })  
       }).catch((err) => {
-        res.status(404).send({error : "Username not found"})
+        return res.status(404).send({error : "Username not found"})
       })
     }catch(error){
-      res.status(500).send({error})
+      return res.status(500).send({error})
     }
 }
 
