@@ -1,5 +1,8 @@
+import jwt from 'jsonwebtoken';
 import UserModel from '../model/user.js';
 import bcrypt from 'bcrypt';
+import ENV from '../config.js';
+
 
 
 /** POST http://localhost:8080/api/register
@@ -49,7 +52,7 @@ import bcrypt from 'bcrypt';
             })
 
             user.save().then((result) => {
-              res.status(200).send({result})
+              res.status(200).send({message : "Succesfully registered"})
             }).catch((error) => {res.status(500).send({error})})
 
           }).catch((err) => {
@@ -67,12 +70,42 @@ import bcrypt from 'bcrypt';
 
  /** POST http://localhost:8080/api/login
   * @params : {
-    "email" : "email@gmail.com",
-    "password" : "password"  
+    "username" : "example123",
+    "password" : "example123"
 }
   */
 export async function login(req, res)  {
-    res.json({"message" : "login"})
+    try{
+      const {username, password} = req.body;
+      
+
+      UserModel.findOne({username}).then((user) => {
+        
+        bcrypt.compare(password, user.password).then((passwordCheck) => {
+          if(!passwordCheck) return res.status(400).send({error : "Dont Have Password"})
+
+          const token = jwt.sign({
+            userId : user._id,
+            username : user.username
+          }, ENV.JWT_SECRET , {expiresIn: "24h"})
+          return res.status(200).send({
+            message : "Login successfully",
+            username: user.username,
+            token,
+          })
+
+        }).catch((error) => {
+          
+          res.status(400).send({error : "Password doesn't match",
+        reason : error.message
+        })
+        })  
+      }).catch((err) => {
+        res.status(404).send({error : "Username not found"})
+      })
+    }catch(error){
+      res.status(500).send({error})
+    }
 }
 
 /**GET http://localhost:8080/api/user/username */
