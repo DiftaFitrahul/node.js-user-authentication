@@ -15,36 +15,50 @@ import bcrypt from 'bcrypt';
 
 }
  */
- exports.register = async (req, res) => {
+ export async function register(req, res) {
     try{
       const {username, password, profile, email} = req.body;
 
-      const existUsername = new Promise((resolve, reject) => {
-        UserModel.findOne({username}, (err, user) => {
-          if(err) reject(new Error(err));
-          if(user) reject({error: 'Username exist, please use unique username'})
-
+      const existUsername = new Promise( (resolve, reject) => {
+         UserModel.findOne({username}).then((data) => {
           resolve();
-        })
+         }).catch((err) => {
+          reject(new Error(err));
+         })
       });
 
       const existEmail = new Promise((resolve, reject) => {
-        UserModel.findOne({email}, (err, user) => {
-          if(err) reject(new Error(err));
-          if(user) reject({error: 'Email exist, please use unique email'})
-
+        UserModel.findOne({email}).then((data) => {
           resolve();
-        })
+         }).catch((err) => {
+          reject(new Error(err));
+         })
       })
 
       Promise.all([existUsername, existEmail]).then(() => {
-        
+        if(password){
+          bcrypt.hash(password, 10).then((hash) => {
+            const user = new UserModel({
+              username,
+              password: hash,
+              profile: profile || '',
+              email
+            })
+
+            user.save().then((result) => {
+              res.status(200).send({result})
+            }).catch((error) => {res.status(500).send({error})})
+
+          }).catch((err) => {
+            res.status(500).send({error: "fail to hash password"})
+          })
+        }
       }).catch((err) => {
-        return res.status(500).send({error : 'Enable to hashed password'})
+        return res.status(500).send({error : err.message + 'makan'})
       })
 
-    } catch(e){
-      res.status(500).send()
+    }catch(err){
+      res.status(500).send({err})
     }
  }
 
@@ -54,12 +68,12 @@ import bcrypt from 'bcrypt';
     "password" : "password"  
 }
   */
-exports.login = async (req, res) => {
+export async function login(req, res)  {
     res.json({"message" : "login"})
 }
 
 /**GET http://localhost:8080/api/user/username */
-exports.getUser = async (req, res) => {
+export async function getUser(req, res)  {
     res.json({"message" : "getUser"})
 }
 
@@ -74,29 +88,29 @@ exports.getUser = async (req, res) => {
     }
  
 */
-exports.updateUser = async (req, res) => {
+export async function updateUser(req, res)  {
   res.json({"message" : "updateUser"})
 }
 
 /**GET http://localhost:8080/api/generateOTP */
-exports.generateOTP = async (req, res) => {
+export async function generateOTP(req, res)  {
   res.json({"message" : "generateOTP"})
 }
 
 /**GET http://localhost:8080/api/verifyOTP */
-exports.verifyOTP = async (req, res) => {
+export async function verifyOTP (req, res) {
   res.json({"message" : "verifyOTP"})
 }
 
 //succesfully redirect user when OTP is valid
 /**GET http://localhost:8080/api/createResetSession */
-exports.createResetSession = async (req, res) => {
+export async function createResetSession(req, res) {
   res.json({"message" : "createResetSession"})
 }
 
 //reset password when we have valid session
 /**PUT http://localhost:8080/api/resetPassword */
-exports.resetPassword = async (req, res) => {
+export async function resetPassword(req, res)  {
   res.json({"message" : "resetPassword"})
 }
 
