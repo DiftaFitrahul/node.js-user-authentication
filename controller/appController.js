@@ -19,8 +19,10 @@ import bcrypt from 'bcrypt';
     try{
       const {username, password, profile, email} = req.body;
 
-      const existUsername = new Promise( (resolve, reject) => {
+      const existUsername =  new Promise( (resolve, reject) => {
          UserModel.findOne({username}).then((data) => {
+          if(data === null) resolve();
+          if(data !== null)reject(new Error('UserName exist'));
           resolve();
          }).catch((err) => {
           reject(new Error(err));
@@ -29,9 +31,10 @@ import bcrypt from 'bcrypt';
 
       const existEmail = new Promise((resolve, reject) => {
         UserModel.findOne({email}).then((data) => {
-          resolve();
+          if(data === null) resolve();
+          if(data !== null)reject(new Error('Email exist'));
          }).catch((err) => {
-          reject(new Error(err));
+          reject(new Error(err.message));
          })
       })
 
@@ -54,11 +57,11 @@ import bcrypt from 'bcrypt';
           })
         }
       }).catch((err) => {
-        return res.status(500).send({error : err.message + 'makan'})
+        return res.status(500).send({promiseError : err.message + " "})
       })
 
     }catch(err){
-      res.status(500).send({err})
+      res.status(500).send(err.message)
     }
  }
 
