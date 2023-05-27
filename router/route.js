@@ -7,7 +7,7 @@ const router = Router();
 router.route('/register').post(controller.register);
 // router.route('/registerMail').post(); // register email
 router.route('/authenticate').post((req, res) => {res.end()}); // authenticate user
-router.route('/login').post(controller.verifyUser,controller.login); // login user
+router.route('/login').post(controller.verifyUser ,controller.login); // login user
 /**POST Method */
 router.route('/user/:username').get(controller.getUser); //user with username
 router.route('/generateOTP').get(controller.generateOTP); // generate OTP

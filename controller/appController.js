@@ -123,7 +123,17 @@ export async function login(req, res)  {
 
 /**GET http://localhost:8080/api/user/username */
 export async function getUser(req, res)  {
-    res.json({"message" : "getUser"})
+    
+    try{
+      const {username} = req.params;
+      UserModel.findOne({username}).then((user) => {
+        if(!user) return res.status(404).send({error : "Username not found"})
+        const{password, ...rest} = Object.assign({}, user.toJSON()); 
+        return res.status(200).send(rest)
+      }).catch((error) => res.send(500).send(error.message))
+    }catch(error){
+      return res.status(404).send({error : "Username not found"})
+    }
 }
 
 /**PUT http://localhost:8080/api/updateUser 
