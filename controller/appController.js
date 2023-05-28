@@ -103,7 +103,6 @@ export async function login(req, res)  {
           }, ENV.JWT_SECRET , {expiresIn: "24h"})
           return res.status(200).send({
             message : "Login successfully",
-            id : user._id,
             username: user.username,
             token,
           })
@@ -150,10 +149,10 @@ export async function getUser(req, res)  {
 */
 export async function updateUser(req, res)  {
   try{
-    const id = req.query.id;
-    if(id){
+    const {userId} = req.user;
+    if(userId){
       const body = req.body;
-    UserModel.updateOne({_id : id}, body).then((user) => {
+    UserModel.updateOne({_id : userId}, body).then((user) => {
       
       return res.status(200).send({message : 'update succesfully'})
     }).catch(err => {
