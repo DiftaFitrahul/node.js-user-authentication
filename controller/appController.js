@@ -103,6 +103,7 @@ export async function login(req, res)  {
           }, ENV.JWT_SECRET , {expiresIn: "24h"})
           return res.status(200).send({
             message : "Login successfully",
+            id : user._id,
             username: user.username,
             token,
           })
@@ -136,8 +137,8 @@ export async function getUser(req, res)  {
     }
 }
 
-/**PUT http://localhost:8080/api/updateUser 
- * @param :{
+/**PUT http://localhost:8080/api/updateuser 
+ * @param :{ 
    "id" : "<userid>" 
  } 
   body: {
@@ -148,7 +149,22 @@ export async function getUser(req, res)  {
  
 */
 export async function updateUser(req, res)  {
-  res.json({"message" : "updateUser"})
+  try{
+    const id = req.query.id;
+    if(id){
+      const body = req.body;
+    UserModel.updateOne({_id : id}, body).then((user) => {
+      
+      return res.status(200).send({message : 'update succesfully'})
+    }).catch(err => {
+      return res.status(500).send({message : err.message})
+    })
+    }else{
+      return res.status(500).send({message : id})
+    }
+  }catch(err){
+    return res.status(404).send(err.message)
+  }
 }
 
 /**GET http://localhost:8080/api/generateOTP */
