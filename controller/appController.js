@@ -3,24 +3,19 @@ import otpGenerator from 'otp-generator';
 import UserModel from '../model/user.js';
 import bcrypt from 'bcrypt';
 import ENV from '../config.js';
+import e from 'express';
 
 /**middleware for verify user */
 export async function verifyUser(req, res, next) {
   try{
     const {username} = req.method == 'GET' ? req.query : req.body
-
-
-
     await UserModel.findOne({username}).then((user) => {
       if(user === null) {
         return res.status(404).send({error: 'User not found'});
       }else{
         next();
-      }  
-      })
- 
-
-    
+        }  
+      })   
   }catch(err){
     return res.status(500).send({error : "Authentication error"})
   }
@@ -203,7 +198,12 @@ export async function verifyOTP (req, res) {
 //succesfully redirect user when OTP is valid
 /**GET http://localhost:8080/api/createResetSession */
 export async function createResetSession(req, res) {
-  res.json({"message" : "createResetSession"})
+  if(req.app.locals.resetSession){
+    req.app.locals.resetSession = false; 
+    return res.status(201).send({msg : "Access granted"});
+  }else{
+    return res.status(440).send({msg : "Session expired!"})
+  }
 }
 
 //reset password when we have valid session
