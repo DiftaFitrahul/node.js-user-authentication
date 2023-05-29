@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import otpGenerator from 'otp-generator';
 import UserModel from '../model/user.js';
 import bcrypt from 'bcrypt';
 import ENV from '../config.js';
@@ -8,15 +9,22 @@ export async function verifyUser(req, res, next) {
   try{
     const {username} = req.method == 'GET' ? req.query : req.body
 
-    const exist = UserModel.findOne({username})
-    if(!exist) return res.status(404).send({error: 'User not found'})
 
-    next();
+
+    await UserModel.findOne({username}).then((user) => {
+      if(user === null) {
+        return res.status(404).send({error: 'User not found'});
+      }else{
+        next();
+      }  
+      })
+ 
+
+    
   }catch(err){
     return res.status(500).send({error : "Authentication error"})
   }
 }
-
 
 /** POST http://localhost:8080/api/register
  * @param : {
@@ -168,12 +176,28 @@ export async function updateUser(req, res)  {
 
 /**GET http://localhost:8080/api/generateOTP */
 export async function generateOTP(req, res)  {
-  res.json({"message" : "generateOTP"})
+  try{
+    req.app.locals.OTP =  await otpGenerator.generate(6, {lowerCaseAlphabets : false, upperCaseAlphabets : false, specialChars: false});
+    return res.status(200).send({"OTP code" : req.app.locals.OTP});
+  }catch(err) {
+    return res.status(404).send(err.message);
+  }
 }
 
 /**GET http://localhost:8080/api/verifyOTP */
 export async function verifyOTP (req, res) {
-  res.json({"message" : "verifyOTP"})
+  try{
+    const {code} = req.query;
+    if(parseInt(req.app.locals.OTP) === parseInt(code)){
+      req.app.locals.OTP = null;
+      req.app.locals.resetSession = true;
+      return res.status(200).send({msg : "verify successfully"})
+    } else{
+      return res.status(400).send({msg : "Invalid OTP"})
+    }
+  }catch(err){
+    return res.status(404).send(err.message);
+  }
 }
 
 //succesfully redirect user when OTP is valid

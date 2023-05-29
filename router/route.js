@@ -1,5 +1,5 @@
 import { Router } from "express";
-import {Auth} from '../middleware/auth.js';
+import {Auth, localVariables} from '../middleware/auth.js';
 import * as controller from "../controller/appController.js"
 const router = Router();
 
@@ -11,8 +11,8 @@ router.route('/authenticate').post((req, res) => {res.end()}); // authenticate u
 router.route('/login').post(controller.verifyUser ,controller.login); // login user
 /**POST Method */
 router.route('/user/:username').get(controller.getUser); //user with username
-router.route('/generateOTP').get(controller.generateOTP); // generate OTP
-router.route('/verifyOTP').get(controller.verifyOTP); // verify OTP
+router.route('/generateOTP').get(controller.verifyUser, localVariables, controller.generateOTP); // generate OTP
+router.route('/verifyOTP').get(controller.verifyUser, controller.verifyOTP); // verify OTP
 router.route('/createResetSession').get(controller.createResetSession); //reset session
 
 /**PUT Method */
