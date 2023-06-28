@@ -1,12 +1,13 @@
 import { Router } from "express";
 import {Auth, localVariables} from '../middleware/auth.js';
 import * as controller from "../controller/appController.js"
+import {registerMail} from "../controller/mailer.js";
 const router = Router();
 
 
 /**POST Method */
 router.route('/register').post(controller.register);
-// router.route('/registerMail').post(); // register email
+router.route('/registerMail').post(registerMail); // register email
 router.route('/authenticate').post((req, res) => {res.end()}); // authenticate user
 router.route('/login').post(controller.verifyUser ,controller.login); // login user
 /**GET Method */
@@ -20,3 +21,4 @@ router.route('/updateuser').put(Auth, controller.updateUser); // update user
 router.route('/resetPassword').put(controller.resetPassword); // reset password
 
 export default router;
+ 
