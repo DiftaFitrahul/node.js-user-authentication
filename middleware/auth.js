@@ -10,9 +10,6 @@ export async function Auth(req, res, next){
         const decodedToken = jwt.verify(token, ENV.JWT_SECRET)
 
         req.user = decodedToken;
-        console.log('============================================================');
-        console.log(req.user);
-
         next();
     }catch(err){
         return res.status(404).send({message : "Update user is decline " + err.message})

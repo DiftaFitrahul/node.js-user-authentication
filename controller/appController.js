@@ -66,7 +66,6 @@ export async function verifyUser(req, res, next) {
               profile: profile || '',
               email
             })
-
             user.save().then((result) => {
               return res.status(200).send({message : "Succesfully registered"})
             }).catch((error) => {res.status(500).send({error})})
@@ -209,6 +208,36 @@ export async function createResetSession(req, res) {
 //reset password when we have valid session
 /**PUT http://localhost:8080/api/resetPassword */
 export async function resetPassword(req, res)  {
-  res.json({"message" : "resetPassword"})
+  try{
+
+    if(!req.app.locals.resetSession) return res.status(440).send({error : "Session expired!"});
+
+    const {username, password} = req.body;
+
+    try{
+      UserModel.findOne({username}).then(user =>{
+        bcrypt.hash(password)
+        .then(hassPassword =>{
+          UserModel.updateOne({username : user.username},
+            {password: hassPassword}
+            )
+            .then(data =>{
+              req.app.locals.resetSession = false; //reset session
+              return res.status(201).send({msg : "succes to reset password"})
+            })
+            .catch(err =>{
+              return res.status(404).send({err})
+            })
+        })
+        .catch(err => {
+            return res.status(500).send({error : 'enable to hash password'})});
+      }).then(err =>{
+          return res.status(404).send({error: "username is not found"})})
+    }catch(err){
+      return res.status(500).send({err})
+    }
+  }catch(err){
+    return res.status(401).send({err})
+  }
 }
 
