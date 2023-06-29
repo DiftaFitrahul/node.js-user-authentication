@@ -97,7 +97,7 @@ export async function login(req, res)  {
       UserModel.findOne({username}).then((user) => {
         
         bcrypt.compare(password, user.password).then((passwordCheck) => {
-          if(!passwordCheck) return res.status(400).send({error : "Dont Have Password"})
+          if(!passwordCheck) return res.status(400).send({error : "Password is wrong"})
 
           const token = jwt.sign({
             userId : user._id,
@@ -111,7 +111,7 @@ export async function login(req, res)  {
 
         }).catch((error) => {
           
-          return res.status(400).send({error : "Password doesn't match",
+          return res.status(400).send({error, 
         reason : error.message
         })
         })  
@@ -216,7 +216,7 @@ export async function resetPassword(req, res)  {
 
     try{
       UserModel.findOne({username}).then(user =>{
-        bcrypt.hash(password)
+        bcrypt.hash(password, 10)
         .then(hassPassword =>{
           UserModel.updateOne({username : user.username},
             {password: hassPassword}
@@ -231,10 +231,10 @@ export async function resetPassword(req, res)  {
         })
         .catch(err => {
             return res.status(500).send({error : 'enable to hash password'})});
-      }).then(err =>{
+      }).catch(err =>{
           return res.status(404).send({error: "username is not found"})})
     }catch(err){
-      return res.status(500).send({err})
+      return res.status(500).send({err}) 
     }
   }catch(err){
     return res.status(401).send({err})
